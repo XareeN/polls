@@ -30,7 +30,7 @@ import java.net.URI;
 import java.util.Collections;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
 
     @Autowired
@@ -48,7 +48,7 @@ public class AuthController {
     @Autowired
     JwtTokenProvider tokenProvider;
 
-    @PostMapping("/signin")
+    @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
         Authentication authentication = authenticationManager.authenticate(
@@ -64,7 +64,7 @@ public class AuthController {
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
     }
 
-    @PostMapping("/signup")
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
         if(userRepository.existsByUsername(signUpRequest.getUsername())) {
             return new ResponseEntity(new ApiResponse(false, "Username is already taken!"),
@@ -82,10 +82,13 @@ public class AuthController {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-                .orElseThrow(() -> new AppException("User Role not set."));
+//        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+//                .orElseThrow(() -> new AppException("User Role not set."));
 
-        user.setRoles(Collections.singleton(userRole));
+        Role role = new Role(RoleName.ROLE_USER);
+
+        user.setRoles(Collections.singleton(role));
+//        Collections.singleton(userRole)
 
         User result = userRepository.save(user);
 
