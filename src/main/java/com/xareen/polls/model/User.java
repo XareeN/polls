@@ -1,27 +1,16 @@
 package com.xareen.polls.model;
 
-import com.xareen.polls.model.audit.DateAudit;
-import org.hibernate.annotations.NaturalId;
-import javax.persistence.*;
+import org.springframework.data.annotation.Id;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity
-@Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {
-                "username"
-        }),
-        @UniqueConstraint(columnNames = {
-                "email"
-        })
-})
-public class User extends DateAudit {
+public class User  {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @NotBlank
     @Size(max = 40)
@@ -31,7 +20,6 @@ public class User extends DateAudit {
     @Size(max = 15)
     private String username;
 
-    @NaturalId
     @NotBlank
     @Size(max = 40)
     @Email
@@ -41,10 +29,6 @@ public class User extends DateAudit {
     @Size(max = 100)
     private String password;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
 //    public User() {
@@ -58,11 +42,11 @@ public class User extends DateAudit {
         this.password = password;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
