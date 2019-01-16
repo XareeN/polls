@@ -10,6 +10,7 @@ import com.xareen.polls.payload.LoginRequest;
 import com.xareen.polls.payload.SignUpRequest;
 import com.xareen.polls.repository.RoleRepository;
 import com.xareen.polls.repository.UserRepository;
+import com.xareen.polls.security.CustomUserDetailsService;
 import com.xareen.polls.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,11 +19,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
@@ -47,6 +46,9 @@ public class AuthController {
 
     @Autowired
     JwtTokenProvider tokenProvider;
+
+    @Autowired
+    CustomUserDetailsService customUserDetailsService;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -97,5 +99,24 @@ public class AuthController {
                 .buildAndExpand(result.getUsername()).toUri();
 
         return ResponseEntity.created(location).body(new ApiResponse(true, "User registered successfully"));
+    }
+
+    @PostMapping("/valid")
+    public ResponseEntity validToken(@RequestHeader("Authorization") String token){
+        String jwt = tokenProvider.getJwtFromRequest(token);
+        if(jwt != null){
+            String userId = tokenProvider.getUserIdFromJWT(jwt);
+            UserDetails userDetails = customUserDetailsService.loadUserById(userId);
+            if(userDetails != null){
+                return  ResponseEntity.ok().build();
+            }else{
+                return  ResponseEntity.status(401).build();
+            }
+//            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+//            authentication.setDetails();
+        }else{
+            return ResponseEntity.status(401).build();
+        }
+
     }
 }

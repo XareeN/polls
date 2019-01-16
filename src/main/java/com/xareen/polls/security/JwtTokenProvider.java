@@ -1,11 +1,14 @@
 package com.xareen.polls.security;
 
+import com.xareen.polls.exception.InvalidToken;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
 import java.util.Date;
 
 @Component
@@ -35,12 +38,15 @@ public class JwtTokenProvider {
     }
 
     public String getUserIdFromJWT(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.getSubject();
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(jwtSecret)
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.getSubject();
+        }catch(SignatureException e){
+            throw new InvalidToken("Can't authorize user id");
+        }
     }
 
     public boolean validateToken(String authToken) {
@@ -59,5 +65,14 @@ public class JwtTokenProvider {
             logger.error("JWT claims string is empty.");
         }
         return false;
+    }
+
+    public String getJwtFromRequest(String token){
+        if(StringUtils.hasText(token) && token.startsWith("Bearer ")){
+            return token.substring(7,token.length());
+        }
+        else{
+            return null;
+        }
     }
 }
