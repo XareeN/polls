@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 @Component
@@ -22,19 +23,25 @@ public class JwtTokenProvider {
     @Value("${app.jwtExpirationInMs}")
     private int jwtExpirationInMs;
 
-    public String generateToken(Authentication authentication) {
+    public ArrayList<String> generateToken(Authentication authentication) {
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
-        return Jwts.builder()
+        String jwtToken = Jwts.builder()
                 .setSubject(userPrincipal.getId())
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
+
+        ArrayList<String> list = new ArrayList<>();
+        list.add(jwtToken);
+        list.add(String.valueOf(jwtExpirationInMs));
+
+        return list;
     }
 
     public String getUserIdFromJWT(String token) {
@@ -55,16 +62,21 @@ public class JwtTokenProvider {
             return true;
         } catch (SignatureException ex) {
             logger.error("Invalid JWT signature");
+            throw new InvalidToken("Unauthorized");
         } catch (MalformedJwtException ex) {
             logger.error("Invalid JWT token");
+            throw new InvalidToken("Unauthorized");
         } catch (ExpiredJwtException ex) {
             logger.error("Expired JWT token");
+            throw new InvalidToken("Unauthorized");
         } catch (UnsupportedJwtException ex) {
             logger.error("Unsupported JWT token");
+            throw new InvalidToken("Unauthorized");
         } catch (IllegalArgumentException ex) {
             logger.error("JWT claims string is empty.");
+            throw new InvalidToken("Unauthorized");
         }
-        return false;
+        //return false;
     }
 
     public String getJwtFromRequest(String token){

@@ -26,6 +26,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 
 @RestController
@@ -62,8 +63,11 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = tokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+        ArrayList<String> tokenInfo = tokenProvider.generateToken(authentication);
+        String jwt = tokenInfo.get(0);
+        Integer expiresIn = Integer.valueOf(tokenInfo.get(1));
+
+        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, expiresIn));
     }
 
     @PostMapping("/register")
@@ -79,7 +83,7 @@ public class AuthController {
         }
 
         // Creating user's account
-        User user = new User(signUpRequest.getName(), signUpRequest.getUsername(),
+        User user = new User(signUpRequest.getUsername(),
                 signUpRequest.getEmail(), signUpRequest.getPassword());
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));

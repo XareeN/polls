@@ -3,9 +3,9 @@ package com.xareen.polls.payload;
 import javax.validation.constraints.*;
 
 public class SignUpRequest {
-    @NotBlank
-    @Size(min = 4, max = 40)
-    private String name;
+//    @NotBlank
+//    @Size(min = 4, max = 40)
+//    private String name;
 
     @NotBlank
     @Size(min = 3, max = 15)
@@ -20,13 +20,13 @@ public class SignUpRequest {
     @Size(min = 6, max = 20)
     private String password;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+//    public String getName() {
+//        return name;
+//    }
+//
+//    public void setName(String name) {
+//        this.name = name;
+//    }
 
     public String getUsername() {
         return username;
